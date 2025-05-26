@@ -192,7 +192,7 @@ export default function Page() {
       </div>
       <div className="relative">
         <APIProvider
-          apiKey={process.env.GOOGLE_MAPS_API_KEY as string}
+          apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
           region="TW"
         >
           <Map
