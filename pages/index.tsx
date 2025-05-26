@@ -1,7 +1,8 @@
+import { GetStaticProps } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
-import { DEFAULT_CENTER, UPDATE_TIME } from "../constants";
+import { DEFAULT_CENTER, UPDATE_TIME, usageData } from "../constants";
 import { YouBikeStation, ActiveStation, ChartMode } from "../constants/types";
 import { getDistance } from "../constants/utils";
 import { Circle } from "../components/Circle";
@@ -10,6 +11,17 @@ import BarChart from "../components/Bar";
 import LineChart from "../components/Line";
 import Tabs from "../components/common/Tabs";
 import SearchList from "../components/SearchList";
+
+interface Station {
+  sno: string;
+  sna: string;
+  tot: number;
+  sbi: number;
+}
+
+interface Props {
+  stations: Station[];
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
