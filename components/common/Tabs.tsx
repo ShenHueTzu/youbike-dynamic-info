@@ -1,4 +1,4 @@
-import { ChartMode } from "@/pages/constants/types";
+import { ChartMode } from "@/constants/types";
 
 interface Props {
   data: { label: string; value: ChartMode }[];

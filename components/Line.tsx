@@ -9,6 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { LineProps } from "../constants/types";
 
 ChartJS.register(
   CategoryScale,
@@ -20,7 +21,7 @@ ChartJS.register(
   Legend,
 );
 
-const LineChart = ({ data }) => {
+const LineChart = ({ data }: LineProps) => {
   return (
     <div className="chart-container">
       <h2 style={{ textAlign: "center" }}>

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { icons } from "@/pages/constants/icons";
+import { icons } from "@/constants/icons";
 
 interface Props {
   size?: "s" | "m";

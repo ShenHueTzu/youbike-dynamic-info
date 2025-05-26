@@ -1,21 +1,15 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
-import { DEFAULT_CENTER, UPDATE_TIME } from "./constants";
-import {
-  YouBikeStation,
-  ActiveStation,
-  ChartMode,
-  BarProps,
-  LineProps,
-} from "./constants/types";
-import { getDistance } from "./constants/utils";
-import { Circle } from "./components/Circle";
-import Pin from "./components/Pin";
-import BarChart from "./components/Bar";
-import LineChart from "./components/Line";
-import Tabs from "./components/common/Tabs";
-import SearchList from "./components/SearchList";
+import { DEFAULT_CENTER, UPDATE_TIME } from "../constants";
+import { YouBikeStation, ActiveStation, ChartMode } from "../constants/types";
+import { getDistance } from "../constants/utils";
+import { Circle } from "../components/Circle";
+import Pin from "../components/Pin";
+import BarChart from "../components/Bar";
+import LineChart from "../components/Line";
+import Tabs from "../components/common/Tabs";
+import SearchList from "../components/SearchList";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
