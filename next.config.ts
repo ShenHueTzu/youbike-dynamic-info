@@ -3,7 +3,7 @@ import { REPO_PATH } from "./constants";
 
 const isProd = process.env.NODE_ENV === "production";
 const nextConfig: NextConfig = {
-  output: "export",
+  output: isProd ? "export" : undefined,
   basePath: isProd ? REPO_PATH : "",
   assetPrefix: isProd ? REPO_PATH : "",
   env: {

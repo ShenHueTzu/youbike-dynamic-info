@@ -5,22 +5,12 @@ import { DEFAULT_CENTER, UPDATE_TIME, usageData } from "../constants";
 import { YouBikeStation, ActiveStation, ChartMode } from "../constants/types";
 import { getDistance } from "../constants/utils";
 import { Circle } from "../components/Circle";
+import SearchMenu from "@/components/SearchMenu";
 import Pin from "../components/Pin";
 import BarChart from "../components/Bar";
 import LineChart from "../components/Line";
 import Tabs from "../components/common/Tabs";
 import SearchList from "../components/SearchList";
-
-interface Station {
-  sno: string;
-  sna: string;
-  tot: number;
-  sbi: number;
-}
-
-interface Props {
-  stations: Station[];
-}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -106,7 +96,6 @@ export default function Page() {
     setList(list);
   };
 
-  const [isFocusing, setIsFocusing] = useState(false);
   const [searchText, setText] = useState("");
   const [recommendedOptions, setOptions] = useState<YouBikeStation[] | []>([]);
   useEffect(() => {
@@ -168,7 +157,28 @@ export default function Page() {
         };
         setChartData(chart);
       } catch (error) {
-        setChartData(usageData);
+        // client-side render
+        const newData = usageData.map(
+          (item: { [x: string]: any; _id: any }) => ({
+            id: item._id,
+            date: Number(item["民國年月"]),
+            usage: Number(item["臺北市youbike每月使用量（次數）"]),
+          }),
+        );
+        const labels: number[] = newData.map((data) => data.date);
+        const list: number[] = newData.map((data) => data.usage);
+        const chart = {
+          labels,
+          datasets: [
+            {
+              label: "Usages in a month",
+              data: list,
+              borderWidth: 1,
+              backgroundColor: "oklch(81% 0.117 11.638)",
+            },
+          ],
+        };
+        setChartData(chart);
         console.log(error, "fetch monthly usage failed.");
       }
     };
@@ -180,33 +190,16 @@ export default function Page() {
       className={`${geistSans.className} ${geistMono.className} flex flex-col items-center justify-center px-[20px] py-[60px] gap-10 font-[family-name:var(--font-geist-sans)]`}
     >
       <span className="font-bold text-xl">Youbike Station Map</span>
-      <div className="w-full relative">
-        <input
-          placeholder="Please enter station name in Chinese or English..."
-          className="w-[-webkit-fill-available] border-1 px-2 py-1 rounded-md"
-          onChange={(e) => setText(e.target.value)}
-          onFocus={() => setIsFocusing(true)}
-          onBlur={() => setTimeout(() => setIsFocusing(false), 150)}
-        />
-        {isFocusing && recommendedOptions.length > 0 && (
-          <div className="absolute top-[40px] w-full max-h-[200px] overflow-scroll z-100 rounded-md border-1">
-            {recommendedOptions.map((opt) => (
-              <div
-                key={opt.sno}
-                className="px-2 py-1 cursor-pointer bg-white hover:bg-gray-100 duration-300"
-                onClick={() => onSelectStation(opt)}
-              >
-                {opt.sna} ({opt.snaen})
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
       <div className="relative">
         <APIProvider
           apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
           region="TW"
         >
+          <SearchMenu
+            list={recommendedOptions}
+            onChangeText={(val) => setText(val)}
+            onSelectStation={onSelectStation}
+          />
           <Map
             style={{ width: "100vw", height: "80vh" }}
             defaultCenter={DEFAULT_CENTER}
