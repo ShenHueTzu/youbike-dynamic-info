@@ -1,14 +1,14 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { SetStateAction, useEffect, useState } from "react";
-import { APIProvider, Map } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { DEFAULT_CENTER, UPDATE_TIME, usageData } from "../constants";
 import { YouBikeStation, ActiveStation, ChartMode } from "../constants/types";
-import { getDistance } from "../constants/utils";
 import { Circle } from "../components/Circle";
 import SearchMenu from "@/components/SearchMenu";
 import Pin from "../components/Pin";
 import BarChart from "../components/Bar";
 import LineChart from "../components/Line";
+import Button from "@/components/common/Button";
 import Tabs from "../components/common/Tabs";
 import SearchList from "../components/SearchList";
 
@@ -23,6 +23,8 @@ const geistMono = Geist_Mono({
 });
 
 export default function Page() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const defaultActiveStation: ActiveStation = { sno: 0 };
   const [selectedStation, setSelectedStation] =
@@ -77,25 +79,6 @@ export default function Page() {
   }, []);
 
   const [isSearching, setIsSearching] = useState(false);
-  const onClickSearch = async () => {
-    setTimeout(() => setIsSearching(true));
-
-    if (timer === 0) await fetchStations();
-
-    const list: YouBikeStation[] = data.filter((station) => {
-      const distance = getDistance(center, {
-        lat: station.latitude,
-        lng: station.longitude,
-      });
-      if (
-        station.available_rent_bikes > 0 &&
-        (distance < 3000 || distance === 3000)
-      )
-        return station;
-    });
-    setList(list);
-  };
-
   const [searchText, setText] = useState("");
   const [recommendedOptions, setOptions] = useState<YouBikeStation[] | []>([]);
   useEffect(() => {
@@ -185,6 +168,39 @@ export default function Page() {
     getChartData();
   }, []);
 
+  const CheckDistance = () => {
+    const geometry = useMapsLibrary("geometry");
+    useEffect(() => {
+      if (geometry) setIsLoaded(true);
+    }, [geometry]);
+
+    const onClickSearch = async () => {
+      setIsSearching(true);
+
+      if (timer === 0) await fetchStations();
+
+      if (!geometry) return;
+      const list: YouBikeStation[] = data.filter((station) => {
+        const distance = geometry.spherical.computeDistanceBetween(center, {
+          lat: station.latitude,
+          lng: station.longitude,
+        });
+        return station.available_rent_bikes > 0 && distance <= 3000;
+      });
+      setList(list);
+    };
+    return (
+      <div className="absolute top-[20px] right-[20px] z-99 cursor-pointer w-[max-content]">
+        <Button
+          text="Search in 3 km"
+          theme="light"
+          onClick={onClickSearch}
+          disabled={!isLoaded}
+        />
+      </div>
+    );
+  };
+
   return (
     <div
       className={`${geistSans.className} ${geistMono.className} flex flex-col items-center justify-center px-[20px] py-[60px] gap-10 font-[family-name:var(--font-geist-sans)]`}
@@ -194,6 +210,7 @@ export default function Page() {
         <APIProvider
           apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}
           region="TW"
+          libraries={["geometry"]}
         >
           <SearchMenu
             list={recommendedOptions}
@@ -206,7 +223,9 @@ export default function Page() {
             defaultZoom={13}
             disableDefaultUI={true}
             onCenterChanged={onCenterChanged}
+            gestureHandling="cooperative"
           >
+            <CheckDistance />
             {data.map((position) => (
               <Pin
                 key={position.sno}
@@ -219,13 +238,13 @@ export default function Page() {
               <Circle center={center} radius={3000} visible={true}></Circle>
             )}
 
-            <SearchList
-              isSearching={isSearching}
-              list={stationsInDistance}
-              onClickSearch={onClickSearch}
-              onSelectStation={onSelectStation}
-              setIsSearching={(val: boolean) => setIsSearching(val)}
-            />
+            {isSearching && stationsInDistance.length > 0 && (
+              <SearchList
+                list={stationsInDistance}
+                onSelectStation={onSelectStation}
+                setIsSearching={(val: boolean) => setIsSearching(val)}
+              />
+            )}
           </Map>
         </APIProvider>
       </div>
