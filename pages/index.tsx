@@ -1,6 +1,5 @@
-import { GetStaticProps } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import { DEFAULT_CENTER, UPDATE_TIME, usageData } from "../constants";
 import { YouBikeStation, ActiveStation, ChartMode } from "../constants/types";
@@ -169,6 +168,7 @@ export default function Page() {
         };
         setChartData(chart);
       } catch (error) {
+        setChartData(usageData);
         console.log(error, "fetch monthly usage failed.");
       }
     };
